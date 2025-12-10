@@ -77,7 +77,7 @@ contract SoulboundDID is ERC721Enumerable, IERC5192, Ownable {
         view
         returns (bool)
     {
-        require(_ownerOf(tokenId) != address(0), "DID does not exist");
+        require(_ownerOf(tokenId) != address(0), "DID not exist");
 
         //DIDInfo storage info = didInfos[tokenId];
 
@@ -96,7 +96,7 @@ contract SoulboundDID is ERC721Enumerable, IERC5192, Ownable {
         view
         returns (bytes memory publicKey, uint256 createdAt, string memory didDocument, address owner)
     {
-        require(_ownerOf(tokenId) != address(0), "DID does not exist");
+        require(_ownerOf(tokenId) != address(0), "DID not exist");
         DIDInfo storage info = didInfos[tokenId];
         return (info.publicKey, info.createdAt, info.didDocument, ownerOf(tokenId));
     }
@@ -117,7 +117,7 @@ contract SoulboundDID is ERC721Enumerable, IERC5192, Ownable {
 
     /// @notice Soulbound NFTs are always locked
     function locked(uint256 tokenId) external view override returns (bool) {
-        require(_ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token not exist");
         return true; // Always locked
     }
 
