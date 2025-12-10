@@ -12,6 +12,8 @@ docs/
 
 # Dotenv file
 .env
+# direnv file
+.envrc
 
 # backups
 *.bak
