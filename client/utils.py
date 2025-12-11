@@ -177,7 +177,7 @@ class DIDKeyManager:
         private_bytes = private_key.private_numbers().private_value.to_bytes(32, "big")
         public_bytes = public_key.public_bytes(
             encoding=serialization.Encoding.X962,
-            format=serialization.PublicFormat.UncompressedPoint,
+            format=serialization.PublicFormat.CompressedPoint,
         )
 
         return private_bytes, public_bytes

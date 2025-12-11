@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DID Viewer - Decentralized Identity</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-fingerprint"></i>
+                <h1>DID Viewer</h1>
+            </div>
+            <p class="subtitle">Decentralized Identity Explorer</p>
+        </header>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Enter Token ID, Wallet Address, or Public Key"
+                    autocomplete="off"
+                >
+                <button id="searchBtn" onclick="searchDID()">
+                    <i class="fas fa-search"></i>
+                    Search
+                </button>
+            </div>
+            <div class="search-hints">
+                <span><i class="fas fa-hashtag"></i> Token ID: 1, 2, 3... </span>
+                <span><i class="fas fa-wallet"></i> Address: 0x... </span>
+                <span><i class="fas fa-key"></i> Public Key: 0x... </span>
+            </div>
+        </section>
+
+        <!-- Loading -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Searching... </p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message hidden">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText"></span>
+        </div>
+
+        <!-- Results Section -->
+        <section id="results" class="results hidden">
+            <!-- DID Info Card -->
+            <div class="card did-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-id-card"></i> DID Information</h2>
+                    <span class="token-badge" id="tokenBadge">Token #1</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label><i class="fas fa-user"></i> Owner</label>
+                            <div class="value address" id="ownerAddress">-</div>
+                        </div>
+                        <div class="info-item">
+                            <label><i class="fas fa-key"></i> Public Key</label>
+                            <div class="value pubkey" id="publicKey">-</div>
+                        </div>
+                        <div class="info-item">
+                            <label><i class="fas fa-calendar"></i> Created At</label>
+                            <div class="value" id="createdAt">-</div>
+                        </div>
+                        <div class="info-item">
+                            <label><i class="fas fa-file-alt"></i> DID Document</label>
+                            <div class="value" id="didDocument">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verifications Card -->
+            <div class="card verifications-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-certificate"></i> Verifiable Credentials</h2>
+                </div>
+                <div class="card-body">
+                    <div id="verificationsContainer" class="verifications-grid">
+                        <!-- Verifications will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Stats -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-link"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Network Status</span>
+                        <span class="stat-value" id="networkStatus">
+                            <span class="status-dot"></span> Connecting...
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-cube"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Block Number</span>
+                        <span class="stat-value" id="blockNumber">-</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Total DIDs</span>
+                        <span class="stat-value" id="totalDIDs">-</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-tags"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">VC Types</span>
+                        <span class="stat-value" id="vcTypes">-</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>DID System - Decentralized Identity on Blockchain</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchDID();
+                }
+            });
+        });
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                const statusEl = document.getElementById('networkStatus');
+                if (data.connected) {
+                    statusEl.innerHTML = '<span class="status-dot connected"></span> Connected';
+                } else {
+                    statusEl.innerHTML = '<span class="status-dot disconnected"></span> Disconnected';
+                }
+                
+                document.getElementById('blockNumber').textContent = data.block_number.toLocaleString();
+                document.getElementById('totalDIDs').textContent = data.total_dids.toLocaleString();
+                document.getElementById('vcTypes').textContent = data.vc_types.join(', ') || '-';
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+                document.getElementById('networkStatus').innerHTML = 
+                    '<span class="status-dot disconnected"></span> Error';
+            }
+        }
+
+        async function searchDID() {
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (!query) {
+                showError('Please enter a Token ID, wallet address, or public key');
+                return;
+            }
+            
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            
+            try {
+                const response = await fetch(`/api/did/${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                document.getElementById('loading').classList.add('hidden');
+                
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    showError(data.error || 'DID not found');
+                }
+            } catch (error) {
+                document.getElementById('loading').classList.add('hidden');
+                showError('Failed to fetch DID information:  ' + error.message);
+            }
+        }
+
+        function displayResults(data) {
+            const didInfo = data.did_info;
+            const verifications = data.verifications;
+            
+            document.getElementById('tokenBadge').textContent = `Token #${didInfo.token_id}`;
+            document.getElementById('ownerAddress').textContent = didInfo.owner;
+            document.getElementById('publicKey').textContent = didInfo.public_key;
+            document.getElementById('publicKey').title = didInfo.public_key;
+            document.getElementById('createdAt').textContent = didInfo.created_at;
+            document.getElementById('didDocument').textContent = didInfo.did_document || 'Not set';
+            // document.getElementById('didDocument').innerHTML = didInfo.did_document 
+            //     ? `<a href="${didInfo.did_document}" target="_blank">${didInfo.did_document}</a>` 
+            //     : '<span class="empty">Not set</span>';
+            
+            const container = document.getElementById('verificationsContainer');
+            container.innerHTML = '';
+            
+            if (verifications.length === 0) {
+                container.innerHTML = '<p class="no-verifications">No verification types available</p>';
+            } else {
+                verifications.forEach(v => {
+                    const card = createVerificationCard(v);
+                    container.appendChild(card);
+                });
+            }
+            
+            document.getElementById('results').classList.remove('hidden');
+        }
+
+        function createVerificationCard(verification) {
+            const div = document.createElement('div');
+            div.className = `verification-item ${verification.is_verified ? 'verified' : 'not-verified'}`;
+            
+            let statusClass = 'status-not-verified';
+            let statusText = 'Not Verified';
+            let statusIcon = 'fa-times-circle';
+            
+            if (verification.is_verified) {
+                if (verification.is_expired) {
+                    statusClass = 'status-expired';
+                    statusText = 'Expired';
+                    statusIcon = 'fa-clock';
+                } else if (verification.is_valid) {
+                    statusClass = 'status-valid';
+                    statusText = 'Valid';
+                    statusIcon = 'fa-check-circle';
+                } else {
+                    statusClass = 'status-revoked';
+                    statusText = 'Revoked';
+                    statusIcon = 'fa-ban';
+                }
+            }
+            
+            div.innerHTML = `
+                <div class="vc-header">
+                    <span class="vc-type">${verification.vc_type}</span>
+                    <span class="vc-status ${statusClass}">
+                        <i class="fas ${statusIcon}"></i> ${statusText}
+                    </span>
+                </div>
+                ${verification.is_verified ? `
+                <div class="vc-details">
+                    <div class="vc-detail">
+                        <span class="label">Issuer:</span>
+                        <span class="value" title="${verification.issuer}">
+                            ${verification.issuer_name || 'Unknown'} 
+                            <small>(${truncateAddress(verification.issuer)})</small>
+                        </span>
+                    </div>
+                    <div class="vc-detail">
+                        <span class="label">Verified:</span>
+                        <span class="value">${verification.verified_at}</span>
+                    </div>
+                    <div class="vc-detail">
+                        <span class="label">Expires:</span>
+                        <span class="value ${verification.is_expired ? 'expired' : ''}">${verification.expires_at}</span>
+                    </div>
+                </div>
+                ` : `
+                <div class="vc-details">
+                    <p class="not-verified-text">This credential has not been verified yet.</p>
+                </div>
+                `}
+            `;
+            
+            return div;
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+        }
+
+        function truncateAddress(address) {
+            if (! address) return '-';
+            return `${address.slice(0, 6)}...${address.slice(-4)}`;
+        }
+
+        function truncateKey(key) {
+            if (! key) return '-';
+            return `${key.slice(0, 20)}...${key.slice(-10)}`;
+        }
+
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>
