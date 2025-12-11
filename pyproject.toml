@@ -1,0 +1,15 @@
+[project]
+name = "soulbounddid"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.3.1",
+    "cryptography>=46.0.3",
+    "dotenv>=0.9.9",
+    "eth-account>=0.13.7",
+    "prompt-toolkit>=3.0.52",
+    "rich>=14.2.0",
+    "web3>=7.14.0",
+]

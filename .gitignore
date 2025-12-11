@@ -19,3 +19,19 @@ docs/
 *.bak
 # temp files
 tmp/
+
+# client CLI history
+.*_cli_history
+# generated key files
+.did_keys/
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
