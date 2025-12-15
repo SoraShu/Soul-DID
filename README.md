@@ -9,3 +9,12 @@ A decentralized identity (DID) system built on Ethereum-compatible blockchains. 
 - Issuer Registry: A registry of trusted issuers for VC issuance.
 - CLI clients: Command-line tools for interacting with the DID system, for users, issuers, and administrators.
 - Web Viewer: A web interface to query and view DIDs and their verified VCs.
+
+## Related
+
+- [NFT(ERC-721)](https://eips.ethereum.org/EIPS/eip-721)
+- [Soulbound Token(ERC-5192)](https://eips.ethereum.org/EIPS/eip-5192)
+
+## How to Use
+
+Run `make` to show help information about available commands.

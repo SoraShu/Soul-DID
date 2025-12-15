@@ -41,7 +41,7 @@ client-issuer: ## Start the issuer client
 client-admin: ## Start the admin client
 	uv run client/admin.py
 
-web: ## Start the DID Viewer web application
+web-app: ## Start the DID Viewer web application
 	uv run web/main.py
 
 .PHONY: help
