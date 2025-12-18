@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {IVCVerifier} from "./interfaces/IVCVerifier.sol";
 import {SoulboundDID} from "./SoulboundDID.sol";
 
 /// @title VerifierRegistry - Registry for VC Verifiers
 /// @notice Manage all VC verifiers for easy frontend queries
-contract VerifierRegistry is Ownable {
+contract VerifierRegistry is AccessControl {
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     struct VerifierInfo {
         address verifierAddress;
         string vcType;
@@ -30,12 +31,14 @@ contract VerifierRegistry is Ownable {
     event VerifierRegistered(address indexed verifier, string vcType);
     event VerifierRemoved(string vcType);
 
-    constructor(address _didContract) Ownable(msg.sender) {
+    constructor(address _didContract) {
         DID_CONTRACT = SoulboundDID(_didContract);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE, msg.sender);
     }
 
     /// @notice Register verifier
-    function registerVerifier(address verifierAddress) external onlyOwner {
+    function registerVerifier(address verifierAddress) external onlyRole(ADMIN_ROLE) {
         require(!isRegistered[verifierAddress], "Already registered");
 
         IVCVerifier verifier = IVCVerifier(verifierAddress);
@@ -51,7 +54,7 @@ contract VerifierRegistry is Ownable {
     }
 
     /// @notice Remove verifier
-    function removeVerifier(string calldata vcType) external onlyOwner {
+    function removeVerifier(string calldata vcType) external onlyRole(ADMIN_ROLE) {
         address verifierAddress = verifiers[vcType];
         require(verifierAddress != address(0), "Not registered");
 

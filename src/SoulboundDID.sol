@@ -36,6 +36,7 @@ contract SoulboundDID is ERC721Enumerable, IERC5192, Ownable {
     // events
     event DIDCreated(uint256 indexed tokenId, address indexed owner, bytes publicKey, uint256 timestamp);
 
+    /// Deprecated: use off-chain verification instead
     event ChallengeVerified(uint256 indexed tokenId, bytes32 challenge, bool success);
 
     constructor() ERC721("Decentralized Identity", "DID") Ownable(msg.sender) {
@@ -68,6 +69,7 @@ contract SoulboundDID is ERC721Enumerable, IERC5192, Ownable {
         return tokenId;
     }
 
+    /// @notice Deprecated: use off-chain verification instead
     /// @notice Verify challenge signature to prove DID ownership
     /// @param tokenId The tokenId of the DID
     /// @param challenge The challenge string
@@ -78,8 +80,6 @@ contract SoulboundDID is ERC721Enumerable, IERC5192, Ownable {
         returns (bool)
     {
         require(_ownerOf(tokenId) != address(0), "DID not exist");
-
-        //DIDInfo storage info = didInfos[tokenId];
 
         // Use Ethereum signed message format
         bytes32 ethSignedMessage = challenge.toEthSignedMessageHash();

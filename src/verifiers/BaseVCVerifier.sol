@@ -32,6 +32,11 @@ abstract contract BaseVCVerifier is IVCVerifier, Ownable {
     }
 
     /// @notice Verify VC and record the result
+    /// @param didTokenId DID tokenId
+    /// @param issuer Issuer address
+    /// @param expiresAt Expiration timestamp
+    /// @param signature Issuer signature
+    /// @param vcData VC specific data (varies by VC type)
     function verifyAndRecord(
         uint256 didTokenId,
         address issuer,

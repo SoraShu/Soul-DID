@@ -239,7 +239,7 @@ async def home(request: Request):
 
 @app.get("/api/stats", response_model=SystemStats)
 async def get_stats():
-    """获取系统统计信息"""
+    """Get system statistics"""
     try:
         w3, did_contract, verifier_registry, _ = get_web3()
 
